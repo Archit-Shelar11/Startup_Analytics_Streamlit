@@ -9,6 +9,13 @@ df = pd.read_csv('startup_funding_clean.csv')
 df['date'] = pd.to_datetime(df['date'], errors='coerce')
 df['year'] = df['date'].dt.year
 
+df['month']=df['date'].dt.month
+
+temp_df=df.groupby(['year','month'])['amount'].sum().reset_index()
+temp_df['X-axis']=temp_df['month'].astype('str')+'-'+temp_df['year'].astype('str')  
+
+
+
 
 
 
@@ -67,7 +74,33 @@ def load_investor_details(investor):
        ax4.plot(year_series.index,year_series.values)
        st.pyplot(fig4)
 
+    
 
+
+
+def load_Overall_Analysis():
+    total= round(df['amount'].sum())
+    col1,col2,col3,col4=st.columns(4)
+    with col1:
+     st.metric('Total',str(total)+' Crores')
+    maxV=df.groupby('startup')['amount'].max().sort_values(ascending=False).head(1).values[0]
+    with col2:
+     st.metric('Max',str(maxV)+' Crores')
+    avg=round(df.groupby('startup')['amount'].sum().mean())
+    with col3:
+       st.metric('Avg',str(avg)+ ' Crores')
+    cnt=round(df['startup'].nunique())
+    with col4:
+       st.metric('Funded StartUps',str(cnt))
+
+
+    st.header('MoM Graph')
+    fig5,ax5=plt.subplots()
+    st.subheader('Mom Investment') 
+    ax5.plot(temp_df['X-axis'],temp_df['amount'])
+    st.pyplot(fig5)
+    
+    
 
 
 
@@ -80,6 +113,10 @@ option = st.sidebar.selectbox(
 
 if option == 'Overall Analysis':
     st.title('Overall Analysis')
+    btn0=st.sidebar.button('Show Overall Analysis')
+    if btn0:
+        load_Overall_Analysis()
+
 
 elif option == 'Startups':
     st.title('Startup Analysis')
